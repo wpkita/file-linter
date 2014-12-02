@@ -8,32 +8,23 @@ import os
 group_counter = 0
 duplicate_counter = 0
 
-# Open duplicates.txt
 with open('duplicates.txt') as f:
-    # Iterate over lines
     for line in f:
+        # Skip empty lines
         if not line.strip():
-            # skip empty lines
             continue
+        # Lines beginning with '#' are the beginning of duplicate groups
         elif line.startswith('#'):
-            # if line starts with #, then it is the beginning of a duplicate group
-            # increment group counter
             group_counter += 1
-            # reset duplicate counter
             duplicate_counter = 0
         else:
-            # otherwise, we are still within the same duplicate group
-            # increment duplicate counter
             duplicate_counter += 1
             file_name = line.strip()
             if duplicate_counter == 1:
-                # if this is the first duplicate for this group
-                # we DO NOT want to delete it
-                # print its name
+                # We do NOT want to delete the first duplicate
                 print('{0}.{1} - KEEP: {2}'.format(group_counter, duplicate_counter, file_name))
             else:
-                # otherwise, we've already saved the first duplicate
-                # delete the file referenced by the current line
+                # The first duplicate has already been kept, so delete this one
                 print('{0}.{1} - DELETE: {2}'.format(group_counter, duplicate_counter, file_name))
                 try:
                     os.remove(file_name)
