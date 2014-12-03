@@ -5,28 +5,47 @@ Has a dependency on FSLint's generated files (which must be named duplicates.txt
 
 import os
 
-group_counter = 0
-duplicate_counter = 0
 
-with open('duplicates.txt') as f:
+class DuplicateGroup:
+    def __init__(self):
+        self.duplicates = []
+
+    def add_duplicate(self, file_path):
+        self.duplicates.append(file_path)
+
+    def purge(self):
+        self.duplicates.sort(key=len)
+
+        # Will keep the file with the shortest path
+        file_to_keep = self.duplicates[0]
+        print('KEEPING:\t{0}'.format(file_to_keep))
+
+        # Will delete other files
+        files_to_delete = self.duplicates[1:]
+
+        for file_path in files_to_delete:
+            print('DELETING:\t{0}'.format(file_path))
+            try:
+                os.remove(file_path)
+            except:
+                print('NO FILE: {0}'.format(file_path))
+
+duplicateGroups = []
+current_group = None
+duplicates_index_file = 'duplicates.txt'
+
+with open(duplicates_index_file) as f:
     for line in f:
+        print(line)
         # Skip empty lines
         if not line.strip():
             continue
         # Lines beginning with '#' are the beginning of duplicate groups
         elif line.startswith('#'):
-            group_counter += 1
-            duplicate_counter = 0
+            current_group = DuplicateGroup()
+            duplicateGroups.append(current_group)
         else:
-            duplicate_counter += 1
-            file_name = line.strip()
-            if duplicate_counter == 1:
-                # We do NOT want to delete the first duplicate
-                print('{0}.{1} - KEEP: {2}'.format(group_counter, duplicate_counter, file_name))
-            else:
-                # The first duplicate has already been kept, so delete this one
-                print('{0}.{1} - DELETE: {2}'.format(group_counter, duplicate_counter, file_name))
-                try:
-                    os.remove(file_name)
-                except:
-                    print('NO FILE: {0}'.format(file_name))
+            current_group.add_duplicate(line.strip())
+
+for group in duplicateGroups:
+    group.purge()
